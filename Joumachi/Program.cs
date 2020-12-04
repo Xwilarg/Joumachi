@@ -88,27 +88,32 @@ namespace Joumachi
                 else
                     return;
             }
-            if (msg.Content.StartsWith("!") || msg.Content.StartsWith(".") || (msg.Content.Length > 2 && (msg.Content[1] == '.' || msg.Content[1] == '!'))) // Common used bot prefix
-                return;
-            string msgText = Regex.Replace(msg.Content, "https?:\\/\\/(www\\.)?[^.]+\\.[a-zA-Z0-9]+\\/?", "");
-            var languages = _identifier.Identify(msg.Content);
-            var mostCertainLanguage = languages.FirstOrDefault();
-            if (mostCertainLanguage != null && File.Exists("Dictionaries/" + mostCertainLanguage.Item1.Iso639_2T + ".dic"))
+
+            // Spell check
+            if (!(msg.Content.StartsWith("!") || msg.Content.StartsWith(".")
+                || (msg.Content.Length > 2 && (msg.Content[1] == '.' || msg.Content[1] == '!'))
+                || (msg.Content.Length > 3 && (msg.Content[2] == '.' || msg.Content[2] == '!')))) // Common used bot prefix
             {
-                var checker = _dictionaries[mostCertainLanguage.Item1.Iso639_2T];
-                foreach (string s in msgText.Split(_splitChar, StringSplitOptions.RemoveEmptyEntries))
+                string msgText = Regex.Replace(msg.Content, "https?:\\/\\/(www\\.)?[^\\.]+\\.([\\s\\S]+(\\/|\\.)?)+", "");
+                var languages = _identifier.Identify(msg.Content);
+                var mostCertainLanguage = languages.FirstOrDefault();
+                if (mostCertainLanguage != null && File.Exists("Dictionaries/" + mostCertainLanguage.Item1.Iso639_2T + ".dic"))
                 {
-                    if (!s.Any(x => char.IsLetter(x)))
-                        continue;
-                    if (!checker.Check(s))
+                    var checker = _dictionaries[mostCertainLanguage.Item1.Iso639_2T];
+                    foreach (string s in msgText.Split(_splitChar, StringSplitOptions.RemoveEmptyEntries))
                     {
-                        var word = s.Trim(_splitChar);
-                        var suggestions = checker.Suggest(word).ToArray();
-                        if (suggestions.Length == 0)
-                            await msg.Channel.SendMessageAsync("\"" + s + "\" doesn't exists");
-                        else
-                            await msg.Channel.SendMessageAsync("\"" + s + "\" doesn't exists, maybe you meant \"" + suggestions[0] + "\"?");
-                        break;
+                        if (!s.Any(x => char.IsLetter(x)))
+                            continue;
+                        if (!checker.Check(s))
+                        {
+                            var word = s.Trim(_splitChar);
+                            var suggestions = checker.Suggest(word).ToArray();
+                            if (suggestions.Length == 0)
+                                await msg.Channel.SendMessageAsync("\"" + s + "\" doesn't exists");
+                            else
+                                await msg.Channel.SendMessageAsync("\"" + s + "\" doesn't exists, maybe you meant \"" + suggestions[0] + "\"?");
+                            break;
+                        }
                     }
                 }
             }
