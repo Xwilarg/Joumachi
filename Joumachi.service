@@ -1,0 +1,11 @@
+[Unit]
+Description=Joumachi
+After=network-online.target
+
+[Service]
+ExecStart=dotnet /home/zirk/bots/Joumachi/Joumachi.dll
+WorkingDirectory=/home/zirk/bots/Joumachi
+Restart=on-failure
+
+[Install]
+WantedBy=multi-user.target
