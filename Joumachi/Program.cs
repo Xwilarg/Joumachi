@@ -87,6 +87,8 @@ namespace Joumachi
                 else
                     return;
             }
+            if (msg.Content.StartsWith("!") || msg.Content.StartsWith(".") || (msg.Content.Length > 2 && (msg.Content[1] == '.' || msg.Content[1] == '!'))) // Common used bot prefix
+                return;
             var languages = _identifier.Identify(msg.Content);
             var mostCertainLanguage = languages.FirstOrDefault();
             if (mostCertainLanguage != null && File.Exists("Dictionaries/" + mostCertainLanguage.Item1.Iso639_2T + ".dic"))
