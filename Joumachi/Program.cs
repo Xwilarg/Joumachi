@@ -9,6 +9,7 @@ using System;
 using System.Collections.Generic;
 using System.IO;
 using System.Linq;
+using System.Text.RegularExpressions;
 using System.Threading.Tasks;
 using WeCantSpell.Hunspell;
 
@@ -89,12 +90,13 @@ namespace Joumachi
             }
             if (msg.Content.StartsWith("!") || msg.Content.StartsWith(".") || (msg.Content.Length > 2 && (msg.Content[1] == '.' || msg.Content[1] == '!'))) // Common used bot prefix
                 return;
+            string msgText = Regex.Replace(msg.Content, "https?:\\/\\/(www\\.)?[^.]+\\.[a-zA-Z0-9]+\\/?", "");
             var languages = _identifier.Identify(msg.Content);
             var mostCertainLanguage = languages.FirstOrDefault();
             if (mostCertainLanguage != null && File.Exists("Dictionaries/" + mostCertainLanguage.Item1.Iso639_2T + ".dic"))
             {
                 var checker = _dictionaries[mostCertainLanguage.Item1.Iso639_2T];
-                foreach (string s in msg.Content.Split(_splitChar, StringSplitOptions.RemoveEmptyEntries))
+                foreach (string s in msgText.Split(_splitChar, StringSplitOptions.RemoveEmptyEntries))
                 {
                     if (!s.Any(x => char.IsLetter(x)))
                         continue;
